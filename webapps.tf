@@ -71,3 +71,33 @@ resource "azurerm_linux_web_app" "web_app_api" {
 
     tags = var.tags
 }
+
+
+#No nos dejó implementarlo ya que el servicio no está incluido o disponible para el tipo de suscripción que tenemos.
+
+resource "azurerm_cdn_profile" "cdn_profile" {
+    name                = "cdn-profile-${lower(var.project)}-${lower(var.environment)}"
+    location            = var.location
+    resource_group_name = azurerm_resource_group.rg.name
+    sku                 = "Standard_Verizon"
+
+    tags = var.tags
+}
+
+resource "azurerm_cdn_endpoint" "cdn_endpoint" {
+    name                = "cdn-endpoint-${lower(var.project)}-${lower(var.environment)}"
+    profile_name        = azurerm_cdn_profile.cdn_profile.name
+    resource_group_name = azurerm_resource_group.rg.name
+
+    origin {
+        name      = "blob-origin"
+        host_name = azurerm_storage_account.storage_account.primary_blob_endpoint 
+    }
+
+    is_http_allowed  = true
+    is_https_allowed = true
+
+    tags = var.tags
+}
+
+
